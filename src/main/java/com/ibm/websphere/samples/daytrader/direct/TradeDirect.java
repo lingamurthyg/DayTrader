@@ -16,6 +16,7 @@
 package com.ibm.websphere.samples.daytrader.direct;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -26,16 +27,16 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import javax.enterprise.concurrent.ManagedThreadFactory;
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSContext;
-import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
+import jakarta.enterprise.concurrent.ManagedThreadFactory;
+import jakarta.jms.ConnectionFactory;
+import jakarta.jms.JMSContext;
+import jakarta.jms.JMSException;
+import jakarta.jms.Queue;
+import jakarta.jms.TextMessage;
+import jakarta.jms.Topic;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
-import javax.transaction.UserTransaction;
+import jakarta.transaction.UserTransaction;
 
 import com.ibm.websphere.samples.daytrader.TradeAction;
 import com.ibm.websphere.samples.daytrader.TradeServices;
@@ -204,7 +205,7 @@ public class TradeDirect implements TradeServices {
 
         try {
             if (Log.doTrace()) {
-                Log.trace("TradeDirect:buy - inSession(" + this.inSession + ")", userID, symbol, new Double(quantity));
+                Log.trace("TradeDirect:buy - inSession(" + this.inSession + ")", userID, symbol, Double.valueOf(quantity));
             }
 
             if (!inSession && orderProcessingMode == TradeConfig.ASYNCH_2PHASE) {
@@ -212,7 +213,7 @@ public class TradeDirect implements TradeServices {
                     Log.trace("TradeDirect:buy create/begin global transaction");
                 }
                 // FUTURE the UserTransaction be looked up once
-                txn = (javax.transaction.UserTransaction) context.lookup("java:comp/UserTransaction");
+                txn = (jakarta.transaction.UserTransaction) context.lookup("java:comp/UserTransaction");
                 txn.begin();
                 setInGlobalTxn(true);
             }
@@ -299,7 +300,7 @@ public class TradeDirect implements TradeServices {
                     // FUTURE the UserTransaction be looked up once
                 }
 
-                txn = (javax.transaction.UserTransaction) context.lookup("java:comp/UserTransaction");
+                txn = (jakarta.transaction.UserTransaction) context.lookup("java:comp/UserTransaction");
                 txn.begin();
                 setInGlobalTxn(true);
             }
@@ -490,7 +491,7 @@ public class TradeDirect implements TradeServices {
          * accountData = getAccountData(accountID, conn); QuoteDataBean
          * quoteData = getQuoteData(conn, quoteID);
          */
-        String userID = getAccountProfileData(conn, new Integer(accountID)).getUserID();
+        String userID = getAccountProfileData(conn, Integer.valueOf(accountID)).getUserID();
 
         HoldingDataBean holdingData = null;
 
@@ -979,7 +980,7 @@ public class TradeDirect implements TradeServices {
         Connection conn = null;
         try {
             if (Log.doTrace()) {
-                Log.trace("TradeDirect:getAccountData - inSession(" + this.inSession + ")", new Integer(accountID));
+                Log.trace("TradeDirect:getAccountData - inSession(" + this.inSession + ")", Integer.valueOf(accountID));
             }
 
             conn = getConn();
@@ -1313,7 +1314,7 @@ public class TradeDirect implements TradeServices {
 
         try {
             if (Log.doTrace()) {
-                Log.trace("TradeDirect:updateQuotePriceVolume - inSession(" + this.inSession + ")", symbol, changeFactor, new Double(sharesTraded));
+                Log.trace("TradeDirect:updateQuotePriceVolume - inSession(" + this.inSession + ")", symbol, changeFactor, Double.valueOf(sharesTraded));
             }
 
             conn = getConn();
@@ -1330,7 +1331,7 @@ public class TradeDirect implements TradeServices {
                 changeFactor = TradeConfig.MAXIMUM_STOCK_SPLIT_MULTIPLIER;
             }
 
-            BigDecimal newPrice = changeFactor.multiply(oldPrice).setScale(2, BigDecimal.ROUND_HALF_UP);
+            BigDecimal newPrice = changeFactor.multiply(oldPrice).setScale(2, RoundingMode.HALF_UP);
             double change = newPrice.subtract(openPrice).doubleValue();
 
             updateQuotePriceVolume(conn, quoteData.getSymbol(), newPrice, newVolume, change);
@@ -1418,7 +1419,7 @@ public class TradeDirect implements TradeServices {
             ResultSet rs = stmt.executeQuery();
             if (!rs.next()) {
                 Log.error("TradeDirect:login -- failure to find account for" + userID);
-                throw new javax.ejb.FinderException("Cannot find account for" + userID);
+                throw new jakarta.ejb.FinderException("Cannot find account for" + userID);
             }
 
             String pw = rs.getString("passwd");
@@ -1551,7 +1552,7 @@ public class TradeDirect implements TradeServices {
         if (!rs.next()) {
             Log.error("TradeDirect:getAccountDataFromResultSet -- cannot find account data");
         } else {
-            accountData = new AccountDataBean(new Integer(rs.getInt("accountID")), rs.getInt("loginCount"), rs.getInt("logoutCount"),
+            accountData = new AccountDataBean(Integer.valueOf(rs.getInt("accountID")), rs.getInt("loginCount"), rs.getInt("logoutCount"),
                     rs.getTimestamp("lastLogin"), rs.getTimestamp("creationDate"), rs.getBigDecimal("balance"), rs.getBigDecimal("openBalance"),
                     rs.getString("profile_userID"));
         }
@@ -1574,7 +1575,7 @@ public class TradeDirect implements TradeServices {
     private HoldingDataBean getHoldingDataFromResultSet(ResultSet rs) throws Exception {
         HoldingDataBean holdingData = null;
 
-        holdingData = new HoldingDataBean(new Integer(rs.getInt("holdingID")), rs.getDouble("quantity"), rs.getBigDecimal("purchasePrice"),
+        holdingData = new HoldingDataBean(Integer.valueOf(rs.getInt("holdingID")), rs.getDouble("quantity"), rs.getBigDecimal("purchasePrice"),
                 rs.getTimestamp("purchaseDate"), rs.getString("quote_symbol"));
         return holdingData;
     }
@@ -1590,7 +1591,7 @@ public class TradeDirect implements TradeServices {
     private OrderDataBean getOrderDataFromResultSet(ResultSet rs) throws Exception {
         OrderDataBean orderData = null;
 
-        orderData = new OrderDataBean(new Integer(rs.getInt("orderID")), rs.getString("orderType"), rs.getString("orderStatus"), rs.getTimestamp("openDate"),
+        orderData = new OrderDataBean(Integer.valueOf(rs.getInt("orderID")), rs.getString("orderType"), rs.getString("orderStatus"), rs.getTimestamp("openDate"),
                 rs.getTimestamp("completionDate"), rs.getDouble("quantity"), rs.getBigDecimal("price"), rs.getBigDecimal("orderFee"),
                 rs.getString("quote_symbol"));
         return orderData;
@@ -1873,7 +1874,7 @@ public class TradeDirect implements TradeServices {
      */
     private static int connCount = 0;
 
-    private static Integer lock = new Integer(0);
+    private static Integer lock = Integer.valueOf(0);
 
     private Connection getConn() throws Exception {
 

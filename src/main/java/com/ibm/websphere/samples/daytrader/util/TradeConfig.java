@@ -340,11 +340,11 @@ public class TradeConfig {
     }
 
     public static int rndInt(int i) {
-        return (new Float(random() * i)).intValue();
+        return (Float.valueOf((float)(random() * i))).intValue();
     }
 
     public static float rndFloat(int i) {
-        return (new Float(random() * i)).floatValue();
+        return (Float.valueOf((float)(random() * i))).floatValue();
     }
 
     public static BigDecimal rndBigDecimal(float f) {
@@ -364,7 +364,7 @@ public class TradeConfig {
     }
 
     public static float rndPrice() {
-        return ((new Integer(rndInt(200))).floatValue()) + 1.0f;
+        return ((Integer.valueOf(rndInt(200))).floatValue()) + 1.0f;
     }
 
     private static final BigDecimal ONE = new BigDecimal(1.0);
@@ -387,7 +387,7 @@ public class TradeConfig {
     }
 
     public static float rndQuantity() {
-        return ((new Integer(rndInt(200))).floatValue()) + 1.0f;
+        return ((Integer.valueOf(rndInt(200))).floatValue()) + 1.0f;
     }
 
     public static String rndSymbol() {
@@ -422,7 +422,7 @@ public class TradeConfig {
         if (deck == null) {
             deck = new ArrayList<Integer>(numUsers);
             for (int i = 0; i < numUsers; i++) {
-                deck.add(i, new Integer(i));
+                deck.add(i, Integer.valueOf(i));
             }
             java.util.Collections.shuffle(deck, r0);
         }
